@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#3D4DBE">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="인간 슬롯">
+<meta name="robots" content="noindex, nofollow">
+<title>인간 슬롯 당첨자 등록</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%233D4DBE'/><text y='74' x='50' font-size='64' text-anchor='middle'>%F0%9F%8E%B0</text></svg>">
+<style>
+  :root{
+    --cobalt:#3D4DBE;
+    --cobalt-lite:#6C7BE8;
+    --ink:#101014;
+    --lemon:#FFE327;
+    --paper:#FFFFFF;
+    --alert:#D62828;
+    --ok:#1C7C3A;
+    --muted:#5B5B6B;
+    --line:3px solid var(--ink);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cobalt);
+    font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+    color:var(--ink);min-height:100vh;
+    padding:calc(18px + env(safe-area-inset-top)) 14px 48px;
+    font-size:17px;line-height:1.5;-webkit-text-size-adjust:100%;
+  }
+  .stage{max-width:620px;margin:0 auto;}
+
+  .masthead{
+    background:var(--paper);border:var(--line);
+    box-shadow:8px 8px 0 rgba(0,0,0,.45);
+    padding:18px 20px 16px;position:relative;overflow:hidden;
+  }
+  .masthead::before{
+    content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(100deg,rgba(16,16,20,.09) 0 2px,transparent 2px 13px);
+    pointer-events:none;
+  }
+  .masthead h1{
+    position:relative;margin:0;font-size:clamp(28px,7.4vw,40px);
+    font-weight:900;letter-spacing:-.045em;line-height:1.04;
+    text-shadow:3px 3px 0 var(--lemon);
+  }
+  .masthead p{position:relative;margin:8px 0 0;font-size:15px;font-weight:600;color:var(--muted);}
+  .bubble{
+    position:absolute;top:14px;right:16px;z-index:2;
+    background:var(--lemon);border:var(--line);border-radius:999px;
+    padding:6px 14px;font-weight:800;font-size:13px;transform:rotate(6deg);
+  }
+
+  .card{
+    background:var(--paper);border:var(--line);
+    box-shadow:8px 8px 0 rgba(0,0,0,.45);
+    padding:20px;margin-top:20px;
+  }
+
+  .field{margin-bottom:22px;}
+  label{display:block;font-weight:800;font-size:16px;margin-bottom:8px;}
+  label .hint{font-weight:600;color:var(--muted);font-size:13px;margin-left:6px;}
+  input{
+    width:100%;font-family:inherit;font-size:20px;font-weight:600;
+    padding:16px 14px;border:var(--line);border-radius:0;background:#FBFBFD;
+    color:var(--ink);appearance:none;
+  }
+  input:focus{outline:4px solid var(--cobalt-lite);outline-offset:2px;background:#fff;}
+  .err{color:var(--alert);font-weight:800;font-size:14px;margin-top:7px;display:none;}
+  .field.bad input{border-color:var(--alert);background:#FFF3F3;}
+  .field.bad .err{display:block;}
+
+  .picks{display:grid;gap:12px;}
+  .pick{
+    display:flex;align-items:center;gap:14px;width:100%;
+    padding:18px 16px;border:var(--line);background:#FBFBFD;
+    font-family:inherit;font-size:19px;font-weight:800;text-align:left;cursor:pointer;
+  }
+  .pick .dot{width:22px;height:22px;border:3px solid var(--ink);border-radius:50%;flex:0 0 22px;}
+  .pick .sub{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-top:2px;}
+  .pick[aria-pressed="true"]{background:var(--lemon);box-shadow:5px 5px 0 var(--ink);}
+  .pick[aria-pressed="true"] .dot{background:var(--ink);}
+  .field.bad .pick{border-color:var(--alert);}
+
+  .submit{
+    width:100%;margin-top:8px;padding:22px;
+    background:var(--lemon);border:var(--line);box-shadow:6px 6px 0 var(--ink);
+    font-family:inherit;font-size:24px;font-weight:900;letter-spacing:-.03em;cursor:pointer;
+  }
+  .submit:active{transform:translate(4px,4px);box-shadow:2px 2px 0 var(--ink);}
+
+  .done{display:none;text-align:center;padding:52px 22px;}
+  .done .burst{
+    font-size:clamp(38px,10vw,56px);font-weight:900;letter-spacing:-.05em;
+    text-shadow:4px 4px 0 var(--lemon);margin-bottom:14px;
+  }
+  .done p{font-size:17px;font-weight:700;color:var(--muted);margin:0;}
+  .done .next{margin-top:26px;padding:16px 30px;background:var(--ink);color:#fff;
+    border:none;font-family:inherit;font-size:17px;font-weight:800;cursor:pointer;}
+
+  .banner{display:none;margin-top:16px;padding:14px 16px;border:var(--line);
+    background:#FFF3F3;font-weight:800;font-size:15px;}
+
+  .statusbar{margin-top:16px;text-align:center;color:rgba(255,255,255,.85);
+    font-size:13px;font-weight:700;}
+  .statusbar b{color:var(--lemon);}
+  .lockbar{margin-top:8px;text-align:center;}
+  .lockbar button{background:none;border:none;color:rgba(255,255,255,.55);
+    font-family:inherit;font-size:14px;font-weight:700;padding:10px 16px;cursor:pointer;}
+
+  .admin{display:none;}
+  .stat{display:grid;grid-template-columns:repeat(3,1fr);border:var(--line);background:var(--paper);}
+  .stat div{padding:14px 8px;text-align:center;border-right:var(--line);}
+  .stat div:last-child{border-right:none;}
+  .stat b{display:block;font-size:26px;font-weight:900;letter-spacing:-.03em;}
+  .stat span{font-size:13px;font-weight:700;color:var(--muted);}
+  .tools{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;}
+  .tools button{flex:1 1 140px;padding:14px;border:var(--line);background:var(--paper);
+    font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;}
+  .tools button.key{background:var(--lemon);}
+  .setup{margin-top:16px;padding:16px;border:var(--line);background:var(--paper);}
+  .setup h3{margin:0 0 10px;font-size:16px;font-weight:900;}
+  .setup input{font-size:14px;padding:12px;}
+  .setup button{width:100%;margin-top:10px;padding:12px;border:var(--line);
+    background:var(--lemon);font-family:inherit;font-weight:800;cursor:pointer;}
+  .setup p{margin:10px 0 0;font-size:13px;font-weight:600;color:var(--muted);line-height:1.6;}
+  .row{border:var(--line);background:var(--paper);margin-top:12px;padding:14px 16px;}
+  .row .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+  .row .nm{font-size:19px;font-weight:900;}
+  .row .tm{font-size:12px;font-weight:700;color:var(--muted);}
+  .row .dt{margin-top:6px;font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;}
+  .tag{display:inline-block;margin-top:8px;padding:3px 9px;border:2px solid var(--ok);
+    color:var(--ok);font-size:12px;font-weight:800;}
+  .tag.wait{border-color:var(--alert);color:var(--alert);}
+  .row .acts{display:flex;gap:8px;margin-top:12px;}
+  .row .acts button{flex:1;padding:10px;border:2px solid var(--alert);color:var(--alert);
+    background:#fff;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;}
+  .empty{padding:40px 20px;text-align:center;font-weight:700;color:var(--muted);}
+  .out{width:100%;height:160px;margin-top:14px;font-size:13px;font-family:ui-monospace,monospace;
+    display:none;border:var(--line);padding:10px;}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <header class="masthead">
+    <div class="bubble">오이쉬~</div>
+    <h1>인간 슬롯<br>당첨자 등록</h1>
+    <p>원광대학교 약학과 · 상품권 20,000원</p>
+  </header>
+
+  <section class="card" id="formCard">
+    <div class="field" id="f-name">
+      <label for="name">이름</label>
+      <input id="name" type="text" autocomplete="off" placeholder="김원약">
+      <div class="err">이름을 적어주세요.</div>
+    </div>
+
+    <div class="field" id="f-phone">
+      <label for="phone">연락처 <span class="hint">이 번호로 상품권을 보내드려요</span></label>
+      <input id="phone" type="tel" inputmode="numeric" autocomplete="off" placeholder="010-0000-0000" maxlength="13">
+      <div class="err">휴대폰 번호 11자리를 확인해주세요.</div>
+    </div>
+
+    <div class="field" id="f-prize">
+      <label>받을 상품권 고르기</label>
+      <div class="picks">
+        <button type="button" class="pick" data-v="스타벅스" aria-pressed="false">
+          <span class="dot"></span>
+          <span>스타벅스<span class="sub">음료·푸드 어디에나 쓰는 금액권</span></span>
+        </button>
+        <button type="button" class="pick" data-v="배달의민족" aria-pressed="false">
+          <span class="dot"></span>
+          <span>배달의민족<span class="sub">배달·포장 주문에 바로 사용</span></span>
+        </button>
+        <button type="button" class="pick" data-v="올리브영" aria-pressed="false">
+          <span class="dot"></span>
+          <span>올리브영<span class="sub">매장·온라인몰 공통 금액권</span></span>
+        </button>
+      </div>
+      <div class="err">받을 상품권을 하나 골라주세요.</div>
+    </div>
+
+    <button class="submit" id="save">등록하기</button>
+    <div class="banner" id="banner"></div>
+  </section>
+
+  <section class="card done" id="doneCard">
+    <div class="burst">등록 완료!</div>
+    <p>행사 끝나고 적어주신 번호로<br>상품권을 보내드릴게요 🎰</p>
+    <button class="next" id="next">다음 사람 등록</button>
+  </section>
+
+  <div class="statusbar" id="status">준비 중…</div>
+  <div class="lockbar"><button id="lock">운영진 명단 보기</button></div>
+
+  <section class="admin" id="admin">
+    <div class="stat">
+      <div><b id="s-total">0</b><span>총 등록</span></div>
+      <div><b id="s-wait">0</b><span>시트 미전송</span></div>
+      <div><b id="s-sum">0</b><span>지급액(원)</span></div>
+    </div>
+    <div class="stat" style="border-top:none">
+      <div><b id="s-sb">0</b><span>스타벅스</span></div>
+      <div><b id="s-bm">0</b><span>배달의민족</span></div>
+      <div><b id="s-oy">0</b><span>올리브영</span></div>
+    </div>
+
+    <div class="tools">
+      <button class="key" id="sync">지금 시트로 보내기</button>
+      <button id="sheet">시트 열기</button>
+      <button id="csv">CSV 내려받기</button>
+      <button id="copy">전체 복사</button>
+      <button id="close">입력 화면으로</button>
+    </div>
+
+    <div class="setup">
+      <h3>구글 시트 연결</h3>
+      <input id="url" type="url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/...../exec">
+      <button id="urlSave">저장하고 연결 테스트</button>
+      <p id="urlMsg">Apps Script 웹앱 주소(/exec로 끝나는 것)를 붙여넣으세요. 연결 전에도 등록은 되고, 연결되면 밀린 기록이 한꺼번에 올라갑니다.</p>
+    </div>
+
+    <textarea class="out" id="out" readonly></textarea>
+    <div id="list"></div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var K_ENTRIES = "humanslot.entries";
+  var K_PIN     = "humanslot.pin";
+  var K_URL     = "humanslot.url";
+  var K_SHEET   = "humanslot.sheeturl";
+  var AMOUNT    = 20000;
+
+  var entries = [], pin = null, endpoint = "", sheetUrl = "";
+  var prize = "", syncing = false;
+
+  function $(id){ return document.getElementById(id); }
+
+  var STORAGE_OK = (function(){
+    try { localStorage.setItem("__t","1"); localStorage.removeItem("__t"); return true; }
+    catch(e){ return false; }
+  })();
+
+  function load(){
+    if(!STORAGE_OK) return;
+    try { entries = JSON.parse(localStorage.getItem(K_ENTRIES) || "[]"); } catch(e){ entries = []; }
+    if(!Array.isArray(entries)) entries = [];
+    pin = localStorage.getItem(K_PIN);
+    endpoint = localStorage.getItem(K_URL) || "";
+    sheetUrl = localStorage.getItem(K_SHEET) || "";
+  }
+  function persist(){
+    if(!STORAGE_OK) throw new Error("no storage");
+    localStorage.setItem(K_ENTRIES, JSON.stringify(entries));
+  }
+  load();
+  $("url").value = endpoint;
+
+  $("phone").addEventListener("input", function(e){
+    var d = e.target.value.replace(/\D/g,"").slice(0,11);
+    e.target.value = d.length < 4 ? d
+      : d.length < 8 ? d.slice(0,3)+"-"+d.slice(3)
+      : d.slice(0,3)+"-"+d.slice(3,7)+"-"+d.slice(7);
+  });
+
+  var picks = document.querySelectorAll(".pick");
+  Array.prototype.forEach.call(picks, function(btn){
+    btn.addEventListener("click", function(){
+      prize = btn.getAttribute("data-v");
+      Array.prototype.forEach.call(picks, function(b){
+        b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+      });
+      mark("f-prize", false);
+    });
+  });
+
+  function mark(id, bad){ $(id).classList.toggle("bad", bad); }
+  function banner(text){
+    var b = $("banner");
+    b.textContent = text;
+    b.style.display = text ? "block" : "none";
+  }
+
+  $("save").addEventListener("click", function(){
+    banner("");
+    var name = $("name").value.trim();
+    var phone = $("phone").value.trim();
+
+    var eName = name.length === 0;
+    var ePhone = phone.replace(/\D/g,"").length !== 11;
+    var ePrize = !prize;
+    mark("f-name", eName); mark("f-phone", ePhone); mark("f-prize", ePrize);
+    if(eName || ePhone || ePrize) return;
+
+    for(var i=0;i<entries.length;i++){
+      if(entries[i].phone === phone){
+        if(!confirm(phone + " 번호로 이미 등록된 기록이 있어요. 그래도 추가할까요?")) return;
+        break;
+      }
+    }
+
+    var entry = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+      ts: new Date().toISOString(),
+      name: name, phone: phone, prize: prize, synced: false
+    };
+    entries.push(entry);
+    try { persist(); }
+    catch(err){
+      entries.pop();
+      banner("이 브라우저는 저장이 막혀 있어요. 시크릿 모드를 끄고 다시 열어주세요.");
+      return;
+    }
+
+    $("formCard").style.display = "none";
+    $("doneCard").style.display = "block";
+    window.scrollTo(0,0);
+    updateStatus();
+    sync();
+  });
+
+  $("next").addEventListener("click", reset);
+  function reset(){
+    $("name").value = ""; $("phone").value = "";
+    prize = "";
+    Array.prototype.forEach.call(picks, function(b){ b.setAttribute("aria-pressed","false"); });
+    ["f-name","f-phone","f-prize"].forEach(function(i){ mark(i,false); });
+    $("doneCard").style.display = "none";
+    $("formCard").style.display = "block";
+    banner("");
+    window.scrollTo(0,0);
+  }
+
+  function waiting(){ return entries.filter(function(e){ return !e.synced; }); }
+
+  function sync(){
+    if(syncing || !endpoint) return Promise.resolve();
+    var q = waiting();
+    if(!q.length) return Promise.resolve();
+    syncing = true;
+    updateStatus();
+    return fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ entries: q })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(out){
+      if(!out || !out.ok) throw new Error("server");
+      var ids = {};
+      q.forEach(function(e){ ids[e.id] = true; });
+      entries.forEach(function(e){ if(ids[e.id]) e.synced = true; });
+      if(out.sheetUrl && out.sheetUrl !== sheetUrl){
+        sheetUrl = out.sheetUrl;
+        try { localStorage.setItem(K_SHEET, sheetUrl); } catch(e){}
+      }
+      persist();
+    })
+    .catch(function(){ /* 다음 주기에 재시도 */ })
+    .then(function(){
+      syncing = false;
+      updateStatus();
+      if($("admin").style.display === "block") render();
+    });
+  }
+
+  setInterval(function(){ if(waiting().length) sync(); }, 20000);
+  window.addEventListener("online", sync);
+
+  function updateStatus(){
+    var w = waiting().length;
+    var el = $("status");
+    if(!endpoint){ el.innerHTML = "기기에 저장 중 · <b>시트 미연결</b>"; return; }
+    if(syncing){ el.innerHTML = "시트로 보내는 중…"; return; }
+    el.innerHTML = w ? "전송 대기 <b>" + w + "건</b> · 자동으로 다시 시도해요"
+                     : "구글 시트 동기화 완료 ✓";
+  }
+  updateStatus();
+
+  $("lock").addEventListener("click", function(){
+    if(!pin){
+      var p = prompt("처음이네요. 운영진용 4자리 PIN을 정해주세요.");
+      if(!p || !/^\d{4}$/.test(p)){ alert("숫자 4자리로 정해주세요."); return; }
+      pin = p;
+      try { localStorage.setItem(K_PIN, pin); } catch(e){}
+    } else if(prompt("PIN 4자리") !== pin){
+      alert("PIN이 맞지 않아요."); return;
+    }
+    $("formCard").style.display = "none";
+    $("doneCard").style.display = "none";
+    $("lock").parentElement.style.display = "none";
+    $("admin").style.display = "block";
+    render();
+    window.scrollTo(0,0);
+  });
+
+  $("close").addEventListener("click", function(){
+    $("admin").style.display = "none";
+    $("out").style.display = "none";
+    $("lock").parentElement.style.display = "block";
+    reset();
+  });
+
+  $("urlSave").addEventListener("click", function(){
+    var v = $("url").value.trim();
+    if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(v)){
+      $("urlMsg").textContent = "주소 형식을 확인해주세요. script.google.com 으로 시작하고 /exec 로 끝나야 합니다.";
+      return;
+    }
+    endpoint = v;
+    try { localStorage.setItem(K_URL, endpoint); } catch(e){}
+    $("urlMsg").textContent = "연결 확인 중…";
+    fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ entries: [] })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(out){
+      if(!out || !out.ok) throw new Error("bad");
+      if(out.sheetUrl){
+        sheetUrl = out.sheetUrl;
+        try { localStorage.setItem(K_SHEET, sheetUrl); } catch(e){}
+      }
+      $("urlMsg").textContent = "연결됐어요 ✓ 밀린 기록을 올립니다.";
+      sync().then(render);
+    })
+    .catch(function(){
+      $("urlMsg").textContent = "연결에 실패했어요. 배포할 때 '액세스 권한: 모든 사용자'로 했는지, 새로 배포한 주소를 복사했는지 확인해주세요.";
+      updateStatus();
+    });
+  });
+
+  $("sync").addEventListener("click", function(){
+    if(!endpoint){ alert("아래에서 구글 시트 주소를 먼저 연결해주세요."); return; }
+    sync().then(render);
+  });
+  $("sheet").addEventListener("click", function(){
+    if(!sheetUrl){ alert("시트 주소를 아직 못 받았어요. 먼저 연결 테스트를 해주세요."); return; }
+    window.open(sheetUrl, "_blank");
+  });
+
+  function count(v){ return entries.filter(function(e){ return e.prize === v; }).length; }
+  function esc(s){
+    return String(s).replace(/[&<>"]/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];
+    });
+  }
+  function pad(n){ return String(n).length < 2 ? "0" + n : String(n); }
+
+  function render(){
+    $("s-total").textContent = entries.length;
+    $("s-wait").textContent = waiting().length;
+    $("s-sum").textContent = (entries.length * AMOUNT).toLocaleString();
+    $("s-sb").textContent = count("스타벅스");
+    $("s-bm").textContent = count("배달의민족");
+    $("s-oy").textContent = count("올리브영");
+
+    var list = $("list");
+    list.innerHTML = "";
+    if(!entries.length){
+      list.innerHTML = '<div class="row empty">아직 등록된 당첨자가 없어요.</div>';
+      return;
+    }
+    entries.slice().reverse().forEach(function(e){
+      var d = new Date(e.ts);
+      var el = document.createElement("div");
+      el.className = "row";
+      el.innerHTML =
+        '<div class="top">' +
+          '<span class="nm">' + esc(e.name) + '</span>' +
+          '<span class="tm">' + (d.getMonth()+1) + '/' + d.getDate() + ' ' +
+            pad(d.getHours()) + ':' + pad(d.getMinutes()) + '</span>' +
+        '</div>' +
+        '<div class="dt">' + esc(e.phone) + '</div>' +
+        '<div class="dt">' + esc(e.prize) + ' 상품권</div>' +
+        '<span class="tag' + (e.synced ? '' : ' wait') + '">' +
+          (e.synced ? '시트 저장됨' : '전송 대기') + '</span>' +
+        '<div class="acts"><button>삭제</button></div>';
+      el.querySelector("button").onclick = function(){ remove(e.id, e.name, e.synced); };
+      list.appendChild(el);
+    });
+  }
+
+  function remove(id, name, synced){
+    var msg = synced
+      ? name + " 님 기록을 이 기기에서 지울까요?\n구글 시트에 올라간 줄은 시트에서 따로 지워야 해요."
+      : name + " 님 기록을 삭제할까요? 아직 시트로 전송되지 않은 기록입니다.";
+    if(!confirm(msg)) return;
+    var bak = entries.slice();
+    entries = entries.filter(function(x){ return x.id !== id; });
+    try { persist(); } catch(err){ entries = bak; alert("삭제에 실패했어요."); }
+    render(); updateStatus();
+  }
+
+  function toCSV(){
+    var head = ["등록시각","이름","연락처","상품권","금액","시트전송"];
+    var rows = entries.map(function(e){
+      return [ new Date(e.ts).toLocaleString("ko-KR"), e.name, e.phone, e.prize,
+               AMOUNT, e.synced ? "완료" : "대기" ];
+    });
+    return [head].concat(rows).map(function(r){
+      return r.map(function(v){ return '"' + String(v).replace(/"/g,'""') + '"'; }).join(",");
+    }).join("\r\n");
+  }
+  $("csv").addEventListener("click", function(){
+    var blob = new Blob(["\uFEFF" + toCSV()], {type:"text/csv;charset=utf-8"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "인간슬롯_당첨자_" + new Date().toISOString().slice(0,10) + ".csv";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  });
+  $("copy").addEventListener("click", function(){
+    var text = toCSV();
+    function showOut(){ var o = $("out"); o.style.display = "block"; o.value = text; o.select(); }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){
+        $("copy").textContent = "복사됨!";
+        setTimeout(function(){ $("copy").textContent = "전체 복사"; }, 1600);
+      }).catch(showOut);
+    } else showOut();
+  });
+
+  if(!STORAGE_OK) banner("이 브라우저는 저장이 막혀 있어요. 시크릿 모드를 끄거나 http 주소로 열어주세요.");
+  sync();
+})();
+</script>
+</body>
+</html>
